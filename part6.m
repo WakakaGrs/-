@@ -1,64 +1,82 @@
-img = imread("testimage2.jpg");
-img = double(img);
-[ROW,COL] = size(img);
-new_img = zeros(ROW,COL);
+image = imread("testimage2.jpg");
+result = edgextract_roberts(image);
+figure;
+imshow(result);
 
-%定义robert算子
-roberts_x = [1,0;0,-1];
-roberts_y = [0,-1;1,0];
-for i = 1:ROW - 1
-    for j = 1:COL - 1
-        funBox = img(i:i+1,j:j+1);
-        G_x = roberts_x .* funBox;
-        G_x = abs(sum(G_x(:)));
-        G_y = roberts_y .* funBox;
-        G_y = abs(sum(G_y(:)));
-        roberts_xy  = G_x * 0.5 + G_y * 0.5;
-        new_img(i,j) = roberts_xy;
+
+function new_image = edgextract_roberts(image)
+    image = rgb2gray(image);
+    image = double(image);
+    [h,w] = size(image);
+    new_image = uint8(zeros(h,w));
+    H_x = [1,0;0,-1];
+    H_y = [0,-1;1,0];
+    for i = 1:w-1
+        for j = 1:h-1
+            box = image(j:j+1,i:i+1);
+            f_x = H_x .* box;
+            f_x = sum(f_x(:));
+            f_y = H_y .* box;
+            f_y = sum(f_y(:));
+            new_image(j,i) = abs(f_x) + abs(f_y);
+        end
     end
 end
-new_img = new_img/255;
 
-%定义sobel算子
-sobel_x = [-1,0,1;-2,0,2;-1,0,1];
-sobel_y = [-1,-2,-1;0,0,0;1,2,1];
-for i = 1:ROW - 2
-    for j = 1:COL - 2
-        funBox = img(i:i+2,j:j+2);
-        G_x = sobel_x .* funBox;
-        G_x = abs(sum(G_x(:)));
-        G_y = sobel_y .* funBox;
-        G_y = abs(sum(G_y(:)));
-        sobelxy  = G_x * 0.5 + G_y * 0.5;
-        new_img(i+1,j+1) = sobelxy;
+
+function new_image = edgextract_sobel(image)
+    image = rgb2gray(image);
+    image = double(image);
+    [h,w] = size(image);
+    new_image = uint8(zeros(h,w));
+    H_x = [-1,0,1;-2,0,2;-1,0,1];
+    H_y = [-1,-2,-1;0,0,0;1,2,1];
+    for i = 2:w-1
+        for j = 2:h-1
+            box = image(j-1:j+1,i-1:i+1);
+            f_x = H_x .* box;
+            f_x = sum(f_x(:));
+            f_y = H_y .* box;
+            f_y = sum(f_y(:));
+            new_image(j,i) = abs(f_x) + abs(f_y);
+        end
     end
 end
-new_img = new_img/255;
 
-%定义Prewitt算子
-prewitt_x = [-1,0,1;-1,0,1;-1,0,1];
-prewitt_y = [-1,-1,-1;0,0,0;1,1,1];
-for i = 1:ROW - 2
-    for j = 1:COL - 2
-        funBox = img(i:i+2,j:j+2);
-        G_x = prewitt_x .* funBox;
-        G_x = abs(sum(G_x(:)));
-        G_y = prewitt_y .* funBox;
-        G_y = abs(sum(G_y(:)));
-        sobelxy  = G_x * 0.5 + G_y * 0.5;
-        new_img(i+1,j+1) = sobelxy;
+
+function new_image = edgextract_prewitt(image)
+    image = rgb2gray(image);
+    image = double(image);
+    [h,w] = size(image);
+    new_image = uint8(zeros(h,w));
+    H_x = [-1,0,1;-1,0,1;-1,0,1];
+    H_y = [-1,-1,-1;0,0,0;1,1,1];
+    for i = 2:w-1
+        for j = 2:h-1
+            box = image(j-1:j+1,i-1:i+1);
+            f_x = H_x .* box;
+            f_x = sum(f_x(:));
+            f_y = H_y .* box;
+            f_y = sum(f_y(:));
+            new_image(j,i) = abs(f_x) + abs(f_y);
+        end
     end
 end
-new_img = new_img/255;
 
-% 定义laplace算子
-laplace = [0,1,0;1,-4,1;0,1,0];
-for i = 1:ROW - 2
-    for j = 1:COL - 2
-        funBox = img(i:i+2,j:j+2);
-        G = laplace .* funBox;
-        G = abs(sum(G(:)));
-        new_img(i+1,j+1) = G;
+
+function new_image = edgextract_laplace(image)
+    image = rgb2gray(image);
+    image = double(image);
+    [h,w] = size(image);
+    new_image = uint8(zeros(h,w));
+    H = [0,1,0;1,-4,1;0,1,0];
+    for i = 2:w-1
+        for j = 2:h-1
+            box = image(j-1:j+1,i-1:i+1);
+            f = H .* box;
+            f = sum(f(:));
+            %运算产生负值，可abs(f)，可f + x产生浮雕效果
+            new_image(j,i) = abs(f);
+        end
     end
 end
-new_img = new_img/255;
